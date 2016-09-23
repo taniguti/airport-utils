@@ -1,0 +1,6 @@
+#!/bin/sh
+
+TMPFILE=/tmp/`uuidgen`
+/usr/sbin/system_profiler -xml SPAirPortDataType > $TMPFILE
+/usr/libexec/PlistBuddy -c "print 0:_items:0:spairport_airport_interfaces:0:_name" ${TMPFILE}
+rm $TMPFILE
