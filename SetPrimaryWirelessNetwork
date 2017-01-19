@@ -1,0 +1,153 @@
+#!/bin/sh
+
+TMPFILE=/tmp/`uuidgen`
+
+myhelp(){
+    cat << __HELP
+
+Put the wireless networks top of the prefer network list.
+
+Usage: $0 -w SSID_NAME [-s security_type]
+
+Options:
+    -h  : Show this message.
+    -s s: Security type of the wireless network (Optional)
+    -w s: SSID aka Wireless network name
+
+Security type:
+    OPEN for none
+    WPA for WPA Personal
+    WPA2 for WPA2 Personal
+    WPA/WPA2 for WPA/WPA2 Personal
+    WPAE for WPA Enterprise
+    WPA2E for WPA2 Enterprise
+    WPAE/WPA2E for WPA/WPA2 Enterprise
+    WEP for plain WEP or for Password
+    8021XWEP for 802.1X WEP
+
+__HELP
+}
+
+convsecuritytype(){
+    TYPE=`echo $1 | tr [:lower:] [:upper:]`
+
+    case "$TYPE" in
+        OPEN | NONE ) 
+            echo OPEN
+            ;;
+        "WPA PERSONAL" | WPA )
+            echo WPA
+            ;;
+        "WPA2 PERSONAL" | WPA2 )
+            echo WPA2
+            ;;
+        "WPA/WPA2 PERSONAL" | WPA/WPA2 )
+            echo WPA/WPA2
+            ;;
+        "WPA ENTERPRISE" | WPAE )
+            echo WPAE
+            ;;
+        "WPA2 ENTERPRISE" | WPA2E )
+            echo WPA2E
+            ;;
+        "WPA/WPA2 ENTERPRISE" | WPAE/WPA2E )
+            echo WPAE/WPA2E
+            ;;
+        PASSWORD | WEP | "PLAIN WEP" )
+            echo WEP
+            ;;
+        "802.1X WEP" | 8021XWEP )
+            echo 8021XWEP
+            ;;
+        *)
+            echo UNKNOWN
+            ;;
+    esac
+}
+
+getsecuritytype(){
+    NAME=$1
+    
+    /usr/libexec/PlistBuddy -c print /Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist | \
+    grep -a -e "SecurityType" -e "SSIDString" | \
+    sed s/' = '/=\"/g | sed s/$/\"/g | paste - - | \
+    awk -v N=$NAME -F\" '$(NF -1) == N {print $0}' >  $TMPFILE
+    
+    source $TMPFILE
+    convsecuritytype "${SecurityType:-UNKNOWN}"
+}
+
+while getopts hs:w: OPT
+do
+    case $OPT in
+        "s") STYPE="${OPTARG}"  ;;
+        "w") ESSID="${OPTARG}"    ;;
+        :|\?|"h") SHOWHELP="YES"  ;;
+    esac
+done
+
+# Show command help
+if [ $# -eq 0 ]; then SHOWHELP="YES" ; fi
+if [ ${SHOWHELP:-NO} = YES ]; then myhelp; exit 0 ; fi
+if [ `whoami` != root ]; then echo "Use me with sudo!"; myhelp; exit 1 ; fi
+
+# Get Airport device name
+/usr/sbin/system_profiler -xml SPAirPortDataType > $TMPFILE
+AIRPORT_DEV=`/usr/libexec/PlistBuddy -c "print 0:_items:0:spairport_airport_interfaces:0:_name" ${TMPFILE}`
+if [ ${AIRPORT_DEV}X = X ]; then
+    echo "This mac does not have Airport!"
+    exit 1
+fi
+
+# Get Preferred wireless network list
+/usr/sbin/networksetup -listpreferredwirelessnetworks $AIRPORT_DEV | \
+    grep -v "Preferred networks on" | \
+    tr -d '\t' > $TMPFILE
+
+# Check ESSID is in the list and its order.
+ORDER=`awk -v W="$ESSID" '$0 == W {print NR}' ${TMPFILE}`
+
+case ${ORDER:-0} in
+    1)
+        : Nothing to do.
+        ;;
+    0)
+        SECTYPE=`convsecuritytype "$STYPE"`
+        case "${SECTYPE:-X}" in
+            X )
+                echo "[ERROR] Failed to get securty type of ${ESSID}: $STYPE"
+                exit 1
+                ;;
+            UNKNOWN )
+                echo "[ERROR] Unknown type of securty for ${ESSID}: $STYPE"
+                exit 1
+                ;;
+            * )
+                : OK I got Security type of $ESSID.
+                ;;
+        esac
+        /usr/sbin/networksetup -addpreferredwirelessnetworkatindex \
+            $AIRPORT_DEV "$ESSID" 0 "$SECTYPE" > "${TMPFILE}.log" 2>&1
+        ;;
+    *)
+        SECTYPE=`getsecuritytype "$ESSID"`
+        case "${SECTYPE:-X}" in
+            X )
+                echo "[ERROR] Failed to get securty type of $ESSID"
+                exit 1
+                ;;
+            UNKNOWN )
+                echo "[ERROR] Unknown type of securty for $ESSID"
+                exit 1
+                ;;
+            * )
+                : OK I got Security type of $ESSID.
+                ;;
+        esac
+
+        /usr/sbin/networksetup -removepreferredwirelessnetwork \
+            $AIRPORT_DEV "$ESSID" > "${TMPFILE}.log" 2>&1
+        /usr/sbin/networksetup -addpreferredwirelessnetworkatindex \
+            $AIRPORT_DEV "$ESSID" 0 "$SECTYPE" >  "${TMPFILE}.log" 2>&1
+        ;;
+esac
