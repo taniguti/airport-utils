@@ -18,10 +18,10 @@ Security type:
     OPEN for none
     WPA for WPA Personal
     WPA2 for WPA2 Personal
-    WPA/WPA2 for WPA/WPA2 Personal
+    WPA/WPA2 for WPA/WPA2 Personal (macOS 10.12 or later)
     WPAE for WPA Enterprise
     WPA2E for WPA2 Enterprise
-    WPAE/WPA2E for WPA/WPA2 Enterprise
+    WPAE/WPA2E for WPA/WPA2 Enterprise (macOS 10.12 or later)
     WEP for plain WEP or for Password
     8021XWEP for 802.1X WEP
 
@@ -30,6 +30,7 @@ __HELP
 
 convsecuritytype(){
     TYPE=`echo $1 | tr [:lower:] [:upper:]`
+    OSVER=`sw_vers -productVersion | awk -F. '{print $2}'`
 
     case "$TYPE" in
         OPEN | NONE )
@@ -42,8 +43,12 @@ convsecuritytype(){
             echo WPA2
             ;;
         "WPA/WPA2 PERSONAL" | WPA/WPA2 )
-            # macOS 10.12 or later
-            echo WPA/WPA2
+            if [ $OSVER -ge 12 ]; then
+                # macOS 10.12 or later
+                echo WPA/WPA2
+            else
+                echo WPA2
+            fi
             ;;
         "WPA ENTERPRISE" | WPAE )
             echo WPAE
@@ -52,8 +57,12 @@ convsecuritytype(){
             echo WPA2E
             ;;
         "WPA/WPA2 ENTERPRISE" | WPAE/WPA2E )
-            # macOS 10.12 or later
-            echo WPAE/WPA2E
+            if [ $OSVER -ge 12 ]; then
+                # macOS 10.12 or later
+                echo WPAE/WPA2E
+            else
+                echo WPA2E
+            fi
             ;;
         PASSWORD | WEP | "PLAIN WEP" )
             echo WEP
