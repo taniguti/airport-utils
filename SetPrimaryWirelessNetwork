@@ -82,7 +82,7 @@ getsecuritytype(){
     /usr/libexec/PlistBuddy -c print /Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist | \
     grep -a -e "SecurityType" -e "SSIDString" | \
     sed s/' = '/=\"/g | sed s/$/\"/g | paste - - | \
-    awk -v N=$NAME -F\" '$(NF -1) == N {print $0}' >  $TMPFILE
+    awk -v N="$NAME" -F\" '$(NF -1) == N {print $0}' >  $TMPFILE
 
     source $TMPFILE
     convsecuritytype "${SecurityType:-UNKNOWN}"
