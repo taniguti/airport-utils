@@ -112,15 +112,15 @@ case ${ORDER:-0} in
         : Nothing to do.
         ;;
     0)
-        SECTYPE=`convsecuritytype "$STYPE"`
+        SECTYPE=`convsecuritytype "${STYPE:-UNKNOWN}"`
         case "${SECTYPE:-X}" in
             X )
                 echo "[ERROR] Failed to get securty type of ${ESSID}: $STYPE"
-                exit 1
+                myhelp; exit 1
                 ;;
             UNKNOWN )
                 echo "[ERROR] Unknown type of securty for ${ESSID}: $STYPE"
-                exit 1
+                myhelp; exit 1
                 ;;
             * )
                 : OK I got Security type of $ESSID.
