@@ -32,7 +32,7 @@ convsecuritytype(){
     TYPE=`echo $1 | tr [:lower:] [:upper:]`
 
     case "$TYPE" in
-        OPEN | NONE ) 
+        OPEN | NONE )
             echo OPEN
             ;;
         "WPA PERSONAL" | WPA )
@@ -42,6 +42,7 @@ convsecuritytype(){
             echo WPA2
             ;;
         "WPA/WPA2 PERSONAL" | WPA/WPA2 )
+            # macOS 10.12 or later
             echo WPA/WPA2
             ;;
         "WPA ENTERPRISE" | WPAE )
@@ -51,6 +52,7 @@ convsecuritytype(){
             echo WPA2E
             ;;
         "WPA/WPA2 ENTERPRISE" | WPAE/WPA2E )
+            # macOS 10.12 or later
             echo WPAE/WPA2E
             ;;
         PASSWORD | WEP | "PLAIN WEP" )
@@ -67,12 +69,12 @@ convsecuritytype(){
 
 getsecuritytype(){
     NAME=$1
-    
+
     /usr/libexec/PlistBuddy -c print /Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist | \
     grep -a -e "SecurityType" -e "SSIDString" | \
     sed s/' = '/=\"/g | sed s/$/\"/g | paste - - | \
     awk -v N=$NAME -F\" '$(NF -1) == N {print $0}' >  $TMPFILE
-    
+
     source $TMPFILE
     convsecuritytype "${SecurityType:-UNKNOWN}"
 }
