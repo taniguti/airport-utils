@@ -91,9 +91,9 @@ getsecuritytype(){
 while getopts hs:w: OPT
 do
     case $OPT in
-        "s") STYPE="${OPTARG}"  ;;
-        "w") ESSID="${OPTARG}"    ;;
-        :|\?|"h") SHOWHELP="YES"  ;;
+        "s") STYPE="${OPTARG}"   ;;
+        "w") ESSID="${OPTARG}"   ;;
+        :|\?|"h") SHOWHELP="YES" ;;
     esac
 done
 
