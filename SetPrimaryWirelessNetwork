@@ -7,7 +7,7 @@ myhelp(){
 
 Put the wireless networks top of the prefer network list.
 
-Usage: $0 -w SSID_NAME [-s security_type]
+Usage: sudo $0 -w SSID_NAME [-s security_type]
 
 Options:
     -h  : Show this message.
