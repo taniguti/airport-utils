@@ -6,12 +6,12 @@ PLIST='/Library/Preferences/SystemConfiguration/com.apple.airport.preferences.pl
 myhelp(){
     cat << __HELP
 
-Usage: sudo $0 -w Wireless-Network-Name [-f] [-p]
+Usage: sudo $0 -w Wireless-Network-Name [-f] [-p /path/to/`basename $PLIST`]
 
 Options:
     -f  : Set SystemMode false (Optional). Default set it true.
     -h  : Show this message.
-    -p s: the plist file (For debug purpose)
+    -p s: path to the plist file (For debug purpose)
     -w s: SSID aka Wireless network name
 
 __HELP
