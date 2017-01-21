@@ -9,7 +9,7 @@ myhelp(){
 Usage: sudo $0 -w Wireless-Network-Name [-f] [-p]
 
 Options:
-    -f  : Set SystemMode false (Optional)
+    -f  : Set SystemMode false (Optional). Default set it true.
     -h  : Show this message.
     -p s: the plist file (For debug purpose)
     -w s: SSID aka Wireless network name
