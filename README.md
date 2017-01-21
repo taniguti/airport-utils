@@ -26,3 +26,11 @@ Put the wireless network on the top of the prefer network list.
 
 Switch the SystemMode of the wireless network on or off.
 The wireless network has SystemMode on, the computer connect to the wireless network while computer is in login screen.
+
+    Usage: sudo ./SwitchSystemMode -w Wireless-Network-Name [-f] [-p /path/to/com.apple.airport.preferences.plist]
+
+    Options:
+        -f  : Set SystemMode false (Optional)
+        -h  : Show this message.
+        -p s: the plist file (For debug purpose)
+        -w s: SSID aka Wireless network name
