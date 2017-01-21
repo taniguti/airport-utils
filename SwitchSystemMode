@@ -4,7 +4,7 @@ NewSystemMode="true"
 PLIST='/Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist'
 
 myhelp(){
-    cat __HELP
+    cat << __HELP
 
 Usage: sudo $0 -w Wireless-Network-Name [-f] [-p]
 
@@ -52,6 +52,6 @@ if [ $? -ne 0 ]; then
     echo "Error with /usr/libexec/PlistBuddy."
     exit 1
 fi
-if [ $IsSystemMode != $NewSystemMode ]; then
+if [ $CurrentSystemMode != $NewSystemMode ]; then
     /usr/libexec/PlistBuddy -c "set KnownNetworks:wifi.ssid.<$ESSID_HEX>:SystemMode $NewSystemMode" "$PLIST"
 fi
