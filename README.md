@@ -30,7 +30,7 @@ The wireless network has SystemMode on, the computer connect to the wireless net
     Usage: sudo ./SwitchSystemMode -w Wireless-Network-Name [-f] [-p /path/to/com.apple.airport.preferences.plist]
 
     Options:
-        -f  : Set SystemMode false (Optional)
+        -f  : Set SystemMode false (Optional). Default set it true.
         -h  : Show this message.
-        -p s: the plist file (For debug purpose)
+        -p s: path to the plist file (For debug purpose)
         -w s: SSID aka Wireless network name
