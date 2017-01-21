@@ -48,10 +48,8 @@ do
 done
 
 CurrentSystemMode=`/usr/libexec/PlistBuddy -c "print KnownNetworks:wifi.ssid.<$ESSID_HEX>:SystemMode" "$PLIST"`
-if [ $? -ne 0 ]; then
-    echo "Error with /usr/libexec/PlistBuddy."
-    exit 1
-fi
+RESULT=$?
+if [ $RESULT -ne 0 ]; then exit $RESULT ; fi
 if [ $CurrentSystemMode != $NewSystemMode ]; then
     /usr/libexec/PlistBuddy -c "set KnownNetworks:wifi.ssid.<$ESSID_HEX>:SystemMode $NewSystemMode" "$PLIST"
 fi
