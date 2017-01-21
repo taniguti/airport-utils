@@ -1,20 +1,42 @@
 #!/bin/sh
 
-if [ ! -x  /usr/libexec/PlistBuddy ]; then exit 1 ; fi
-if [ `whoami` != root ]; then
-    echo "Use sudo $0 ESS-ID-NAME"
-    exit 0
-fi
+NewSystemMode="true"
+PLIST='/Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist'
 
-ESSID="$1"
-if [ ${ESSID}X = X ]; then
-    echo "Use sudo $0 ESS-ID-NAME"
-    exit 1
+myhelp(){
+    cat __HELP
+
+Usage: sudo $0 -w Wireless-Network-Name [-f] [-p]
+
+Options:
+    -f  : Set SystemMode false (Optional)
+    -h  : Show this message.
+    -p s: the plist file (For debug purpose)
+    -w s: SSID aka Wireless network name
+
+__HELP
+}
+
+while getopts fhp:w: OPT
+do
+    case $OPT in
+        "f") NewSystemMode="false" ;;
+        "p") PLIST="${OPTARG}"     ;;
+        "w") ESSID="${OPTARG}"     ;;
+        :|\?|"h") SHOWHELP="YES"   ;;
+    esac
+done
+
+if [ ${ESSID}X = X ]; then myhelp ; exit 1 ; fi
+if [ `whoami` != root ]; then myhelp ; exit 1 ; fi
+if [ ! -f "$PLIST" ]; then
+    echo "Not found: $PLIST"
+    myhelp; exit 1
 fi
 
 n=0
 ESSID_HEX=""
-for i in `/bin/echo -n "$ESSID" | od -t x1 | awk '$1 = " " {print}'` 
+for i in `/bin/echo -n "$ESSID" | od -t x1 | awk '$1 = " " {print}'`
 do
     ESSID_HEX="${ESSID_HEX}${i}"
     if [ $n -eq 3 ]; then
@@ -22,25 +44,14 @@ do
         n=0
     else
         n=`expr $n + 1`
-    fi    
+    fi
 done
 
-# This is for TEST.
-if [ "$2"X = X ]; then
-    PLIST='/Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist'
-else
-    PLIST="$2"
-fi
-if [ ! -f "$PLIST" ]; then
-    echo "Not found: $PLIST"
+CurrentSystemMode=`/usr/libexec/PlistBuddy -c "print KnownNetworks:wifi.ssid.<$ESSID_HEX>:SystemMode" "$PLIST"`
+if [ $? -ne 0 ]; then
+    echo "Error with /usr/libexec/PlistBuddy."
     exit 1
 fi
-
-IsSystemMode=`/usr/libexec/PlistBuddy -c "print KnownNetworks:wifi.ssid.<$ESSID_HEX>:SystemMode" "$PLIST"`
-if [ $? -ne 0 ]; then 
-    echo "Error with /usr/libexec/PlistBuddy."
-    exit 1 
-fi
-if [ $IsSystemMode = false ]; then
-    /usr/libexec/PlistBuddy -c "set KnownNetworks:wifi.ssid.<$ESSID_HEX>:SystemMode true" "$PLIST"
+if [ $IsSystemMode != $NewSystemMode ]; then
+    /usr/libexec/PlistBuddy -c "set KnownNetworks:wifi.ssid.<$ESSID_HEX>:SystemMode $NewSystemMode" "$PLIST"
 fi
