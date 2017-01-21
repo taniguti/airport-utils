@@ -3,7 +3,7 @@ Small scripts for wireless settings of macOS.
 
 ## SetPrimaryWirelessNetwork
 
-Put the wireless networks top of the prefer network list.
+Put the wireless network on the top of the prefer network list.
 
     Usage: sudo ./SetPrimaryWirelessNetwork -w SSID_NAME [-s security_type]
     Options:
@@ -21,3 +21,8 @@ Put the wireless networks top of the prefer network list.
         WPAE/WPA2E for WPA/WPA2 Enterprise (macOS 10.12 or later)
         WEP for plain WEP or for Password
         8021XWEP for 802.1X WEP
+
+## SwitchSystemMode
+
+Switch the SystemMode of the wireless network on or off.
+The wireless network has SystemMode on, the computer connect to the wireless network while computer is in login screen.
