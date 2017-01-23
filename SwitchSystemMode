@@ -33,11 +33,27 @@ do
     esac
 done
 
-if [ ${ESSID}X = X ]; then myhelp ; exit 1 ; fi
+if [ "${SHOWHELP:-NO}" = YES ]; then myhelp ; exit 0 ; fi
+if [ "${ESSID}X" = "X" ]; then myhelp ; exit 1 ; fi
 if [ `whoami` != root ]; then myhelp ; exit 1 ; fi
 if [ ! -f "$PLIST" ]; then
     echo "Not found: $PLIST"
     myhelp; exit 1
+fi
+
+# Check if it exist in preferred wireless network list
+TMPFILE=/tmp/`uuidgen`
+/usr/sbin/system_profiler -xml SPAirPortDataType > $TMPFILE
+AIRPORT_DEV=`/usr/libexec/PlistBuddy -c "print 0:_items:0:spairport_airport_interfaces:0:_name" ${TMPFILE}`
+
+Is_EXIST=`/usr/sbin/networksetup -listpreferredwirelessnetworks $AIRPORT_DEV | \
+    grep -v "Preferred networks on" | \
+    tr -d '\t' | awk -v W="$ESSID" '$0 == W {print NR}'`
+
+if [ "${Is_EXIST:-0}" -eq 0 ]; then
+    echo "The $ESSID is not in preferred network list."
+    echo "Abort!!"
+    exit 1
 fi
 
 n=0
