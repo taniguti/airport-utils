@@ -17,6 +17,12 @@ Options:
 __HELP
 }
 
+OSVER=`sw_vers -productVersion | awk -F. '{print $2}'`
+if [ $OSVER -lt 10 ]; then
+    echo "I work only on version 10.10 or later of OS X."
+    exit 1
+fi
+
 while getopts fhp:w: OPT
 do
     case $OPT in
